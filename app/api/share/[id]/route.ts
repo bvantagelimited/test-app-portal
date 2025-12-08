@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
+import { readFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
@@ -33,4 +33,33 @@ export async function GET(
   }
 }
 
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    // Validate ID to prevent directory traversal
+    if (!id || id.includes('..') || id.includes('/') || id.includes('\\')) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
 
+    const uploadsDir = path.join(process.cwd(), 'uploads', id);
+
+    if (!existsSync(uploadsDir)) {
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    }
+
+    // Delete the entire upload directory
+    await rm(uploadsDir, { recursive: true, force: true });
+
+    return NextResponse.json({ success: true, message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting share:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete file' },
+      { status: 500 }
+    );
+  }
+}

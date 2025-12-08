@@ -4,6 +4,31 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+// Supported app file extensions
+const SUPPORTED_EXTENSIONS = ['.apk', '.ipa', '.aab', '.exe', '.dmg', '.pkg', '.msi', '.deb', '.rpm', '.appimage'];
+
+function getFileExtension(filename: string): string {
+  const lastDot = filename.lastIndexOf('.');
+  return lastDot !== -1 ? filename.slice(lastDot).toLowerCase() : '';
+}
+
+function getFileType(filename: string): string {
+  const ext = getFileExtension(filename);
+  const typeMap: Record<string, string> = {
+    '.apk': 'Android',
+    '.aab': 'Android Bundle',
+    '.ipa': 'iOS',
+    '.exe': 'Windows',
+    '.msi': 'Windows Installer',
+    '.dmg': 'macOS',
+    '.pkg': 'macOS Package',
+    '.deb': 'Linux (Debian)',
+    '.rpm': 'Linux (RPM)',
+    '.appimage': 'Linux (AppImage)',
+  };
+  return typeMap[ext] || 'App';
+}
+
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
@@ -20,9 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    if (!file.name.endsWith('.apk')) {
-      return NextResponse.json({ error: 'Only APK files are allowed' }, { status: 400 });
+    const fileExt = getFileExtension(file.name);
+    if (!SUPPORTED_EXTENSIONS.includes(fileExt)) {
+      return NextResponse.json({ 
+        error: `Unsupported file type. Allowed: ${SUPPORTED_EXTENSIONS.join(', ')}` 
+      }, { status: 400 });
     }
+
+    const fileType = getFileType(file.name);
 
     const uploadsDir = path.join(process.cwd(), 'uploads');
     let uploadId: string;
@@ -93,6 +123,7 @@ export async function POST(request: NextRequest) {
       appName,
       version,
       fileSize: file.size,
+      fileType,
       uploadedAt: new Date().toISOString(),
       versionHistory: versionHistory.length > 0 ? versionHistory : undefined,
       isUpdate,

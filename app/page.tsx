@@ -1,7 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
+interface ExistingApp {
+  id: string;
+  appName: string;
+  version: string;
+  uploadedAt: string;
+  fileSize: number;
+}
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -17,45 +25,68 @@ export default function Home() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
+  const [existingApps, setExistingApps] = useState<ExistingApp[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
   const router = useRouter();
+
+  // Fetch existing apps when update mode is enabled
+  useEffect(() => {
+    if (isUpdateMode) {
+      setLoadingApps(true);
+      fetch('/api/apps')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setExistingApps(data);
+          }
+        })
+        .catch(err => console.error('Failed to fetch apps:', err))
+        .finally(() => setLoadingApps(false));
+    }
+  }, [isUpdateMode]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith('.apk')) {
-        setError('Please select an APK file');
+      const supportedExtensions = ['.apk', '.ipa', '.aab', '.exe', '.dmg', '.pkg', '.msi', '.deb', '.rpm', '.appimage'];
+      const fileExt = selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase();
+      
+      if (!supportedExtensions.includes(fileExt)) {
+        setError(`Unsupported file type. Allowed: ${supportedExtensions.join(', ')}`);
         return;
       }
       setFile(selectedFile);
       setError(null);
       
-      // Auto-parse APK to extract version and app name
-      setParsing(true);
-      try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        
-        const response = await fetch('/api/parse-apk', {
-          method: 'POST',
-          body: formData,
-        });
-        
-        const data = await response.json();
-        
-        // Always try to set app name if available (even if parsing partially failed)
-        if (data.appName && !appName) {
-          setAppName(data.appName);
+      // Auto-parse APK to extract version and app name (only for APK files)
+      if (fileExt === '.apk') {
+        setParsing(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+          
+          const response = await fetch('/api/parse-apk', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          const data = await response.json();
+          
+          // Always try to set app name if available (even if parsing partially failed)
+          if (data.appName && !appName) {
+            setAppName(data.appName);
+          }
+          
+          // Set version if parsing was successful
+          if (data.success && data.versionName && !version) {
+            setVersion(data.versionName);
+          }
+        } catch (err) {
+          // Silently fail - user can still fill manually
+          console.error('Failed to parse APK:', err);
+        } finally {
+          setParsing(false);
         }
-        
-        // Set version if parsing was successful
-        if (data.success && data.versionName && !version) {
-          setVersion(data.versionName);
-        }
-      } catch (err) {
-        // Silently fail - user can still fill manually
-        console.error('Failed to parse APK:', err);
-      } finally {
-        setParsing(false);
       }
     }
   };
@@ -106,17 +137,24 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              APK Portal
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
-              Upload and share your Android apps with clients
-            </p>
+    <div className="min-h-screen bg-white dark:from-gray-900 dark:to-gray-800">
+      {/* Header with Logo and Title */}
+      <div className="bg-white">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <img 
+            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NC44OTIiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NC44OTIgNDUiPjxkZWZzPjxzdHlsZT4uYXtmaWxsOiNmZmY7fS5ie2ZpbGw6I2ZiMWM0NDt9PC9zdHlsZT48L2RlZnM+PHJlY3QgY2xhc3M9ImEiIHdpZHRoPSIzMSIgaGVpZ2h0PSIyNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi45OTkgOSkiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDApIj48cGF0aCBjbGFzcz0iYiIgZD0iTTcuNDIxLDYuNjc1LDkuNjU3LDQuNTA3VjBIMFY2LjY3NVoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyLjM4NSAxNS4yOTUpIi8+PHBhdGggY2xhc3M9ImIiIGQ9Ik0wLDQ1VjBINDQuODkyVjMyLjAxOUwzMS45NjcsNDQuOTc1Wk0xOC4yMDgsMTEuMDgzVjMzLjk0MWg0LjJWMjYuMTgySDMxLjU1bDQuNjkzLTQuNTA4aC4wMjVWMTEuMDgzWm0tOS41NTgsMFYzMy45NDFoNC4yVjExLjA4M1oiLz48L2c+PC9zdmc+"
+            alt="IPification Logo"
+            className="h-8 w-auto"
+          />
+          <div className="border-l border-gray-300 pl-4">
+            <h1 className="text-lg font-semibold text-gray-900">App Distribution</h1>
+            <p className="text-xs text-gray-500">Internal app sharing tool</p>
           </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-10">
+        <div className="max-w-2xl mx-auto">
 
           {!uploadResult ? (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
@@ -132,7 +170,7 @@ export default function Home() {
                         setExistingShareId('');
                       }
                     }}
-                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 text-[#fc1c44] border-gray-300 rounded focus:ring-[#fc1c44]"
                   />
                   <label htmlFor="update-mode" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Update existing share link
@@ -140,30 +178,46 @@ export default function Home() {
                 </div>
 
                 {isUpdateMode && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <div className="bg-[#fc1c44]/10 dark:bg-rose-900/20 border border-[#fc1c44]/30 dark:border-[#fc1c44]/50 rounded-lg p-4 mb-4">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Existing Share Link or ID
+                      Select App to Update
                     </label>
-                    <input
-                      type="text"
-                      value={existingShareId}
-                      onChange={(e) => {
-                        let value = e.target.value.trim();
-                        // Extract ID from full URL if pasted
-                        if (value.includes('/share/')) {
-                          const match = value.match(/\/share\/([^\/\s]+)/);
-                          if (match) {
-                            value = match[1];
+                    {loadingApps ? (
+                      <div className="flex items-center gap-2 py-3 text-gray-500 dark:text-gray-400">
+                        <div className="w-4 h-4 border-2 border-[#fc1c44] border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm">Loading apps...</span>
+                      </div>
+                    ) : existingApps.length === 0 ? (
+                      <p className="py-3 text-sm text-gray-500 dark:text-gray-400">
+                        No existing apps found. Upload your first app!
+                      </p>
+                    ) : (
+                      <select
+                        value={existingShareId}
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          setExistingShareId(selectedId);
+                          // Auto-fill app name from selected app
+                          const selectedApp = existingApps.find(app => app.id === selectedId);
+                          if (selectedApp && !appName) {
+                            setAppName(selectedApp.appName);
                           }
-                        }
-                        setExistingShareId(value);
-                      }}
-                      placeholder="Paste share link or ID (e.g., abc-123-def or https://.../share/abc-123-def)"
-                      className="w-full px-4 py-3 border border-blue-300 dark:border-blue-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                    />
-                    <p className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                      Paste the full share link or just the ID from the URL
-                    </p>
+                        }}
+                        className="w-full px-4 py-3 border border-[#fc1c44]/40 dark:border-[#fc1c44] rounded-lg focus:ring-2 focus:ring-[#fc1c44] focus:border-transparent dark:bg-gray-700 dark:text-white appearance-none bg-white dark:bg-gray-700 cursor-pointer"
+                      >
+                        <option value="">-- Select an app --</option>
+                        {existingApps.map((app) => (
+                          <option key={app.id} value={app.id}>
+                            {app.appName} (v{app.version}) - {new Date(app.uploadedAt).toLocaleDateString()}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    {existingShareId && (
+                      <p className="mt-2 text-xs text-[#fc1c44] dark:text-[#fc1c44]/70">
+                        Selected: {existingApps.find(app => app.id === existingShareId)?.appName || existingShareId}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -176,7 +230,7 @@ export default function Home() {
                     value={appName}
                     onChange={(e) => setAppName(e.target.value)}
                     placeholder="My Awesome App"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#fc1c44] focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
@@ -189,13 +243,13 @@ export default function Home() {
                     value={version}
                     onChange={(e) => setVersion(e.target.value)}
                     placeholder="1.0.0"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#fc1c44] focus:border-transparent dark:bg-gray-700 dark:text-white"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    APK File
+                    App File
                   </label>
                   <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-6 py-10">
                     <div className="text-center">
@@ -215,14 +269,14 @@ export default function Home() {
                       <div className="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-400">
                         <label
                           htmlFor="file-upload"
-                          className="relative cursor-pointer rounded-md font-semibold text-indigo-600 dark:text-indigo-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+                          className="relative cursor-pointer rounded-md font-semibold text-[#fc1c44] dark:text-[#fc1c44] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#fc1c44] focus-within:ring-offset-2 hover:text-[#fc1c44]"
                         >
                           <span>Upload a file</span>
                           <input
                             id="file-upload"
                             name="file-upload"
                             type="file"
-                            accept=".apk"
+                            accept=".apk,.ipa,.aab,.exe,.dmg,.pkg,.msi,.deb,.rpm,.appimage"
                             className="sr-only"
                             onChange={handleFileChange}
                           />
@@ -230,11 +284,11 @@ export default function Home() {
                         <p className="pl-1">or drag and drop</p>
                       </div>
                       <p className="text-xs leading-5 text-gray-600 dark:text-gray-400">
-                        APK files only
+                        APK, IPA, AAB, EXE, DMG, PKG, MSI, DEB, RPM, AppImage
                       </p>
                       {file && (
                         <div className="mt-2">
-                          <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                          <p className="text-sm text-[#fc1c44] dark:text-[#fc1c44]">
                             Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                           </p>
                           {parsing && (
@@ -257,9 +311,9 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={!file || uploading || (isUpdateMode && !existingShareId)}
-                  className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full bg-[#fc1c44] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#fc1c44]/90 focus:outline-none focus:ring-2 focus:ring-[#fc1c44] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {uploading ? 'Uploading...' : isUpdateMode ? 'Update APK' : 'Upload APK'}
+                  {uploading ? 'Uploading...' : isUpdateMode ? 'Update App' : 'Upload App'}
                 </button>
               </form>
             </div>
@@ -286,8 +340,8 @@ export default function Home() {
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                   {uploadResult.isUpdate 
-                    ? 'Your APK has been updated. The same share link now points to the new version:'
-                    : 'Your APK has been uploaded. Share this link with your clients:'}
+                    ? 'Your app has been updated. The same share link now points to the new version:'
+                    : 'Your app has been uploaded. Share this link with your clients:'}
                 </p>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
                   <div className="flex items-center justify-between">
@@ -301,7 +355,7 @@ export default function Home() {
                           `${window.location.origin}${uploadResult.shareUrl}`
                         )
                       }
-                      className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                      className="ml-4 px-4 py-2 bg-[#fc1c44] text-white rounded-lg hover:bg-[#fc1c44]/90 transition-colors text-sm font-medium"
                     >
                       Copy
                     </button>
@@ -323,7 +377,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => router.push(uploadResult.shareUrl)}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="px-6 py-2 bg-[#fc1c44] text-white rounded-lg hover:bg-[#fc1c44]/90 transition-colors"
                   >
                     View Share Page
                   </button>
