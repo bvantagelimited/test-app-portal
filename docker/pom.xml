@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ipification</groupId>
+        <artifactId>test-app-portal</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>test-app-portal-docker</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Test App Portal Docker Image</name>
+    <description>
+        Docker Image to run Test App Portal as a Container
+    </description>
+    
+    <build>
+        <finalName>test-app-portal-image</finalName>
+        
+        <!--<resources>
+            <resource></resource>
+        </resources>-->
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <resources>
+                        <resource>
+                            <directory>../frontend/target/dist</directory>
+                            <targetPath>app</targetPath>
+                            <filtering>false</filtering>
+                        </resource>
+                        <!--<resource>
+                            <directory>../rpm/resources</directory>
+                            <targetPath>resources</targetPath>
+                            <filtering>false</filtering>
+                            <includes>
+                                <include>admin.conf</include>
+                            </includes>
+                        </resource>-->
+                    </resources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>copy-frontent</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <configuration>
+                    <verbose>true</verbose>
+                    <images>
+                        <image>
+                            <name>${project.build.finalName}</name>
+                            <build>
+                                <dockerFile>${project.basedir}/Dockerfile</dockerFile>
+                                <contextDir>${project.basedir}</contextDir>
+                                <tags>
+                                    <tag>${project.version}</tag>
+                                    <tag>latest</tag>
+                                </tags>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>docker-build</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

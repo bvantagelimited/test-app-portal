@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    distDir: 'target/dist',
   /* config options here */
   experimental: {
     serverActions: {
