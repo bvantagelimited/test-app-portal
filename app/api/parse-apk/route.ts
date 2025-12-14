@@ -48,7 +48,7 @@ function parseBinaryXML(buffer: Buffer): { versionName?: string; packageName?: s
       const matches = combinedText.match(versionPattern);
       if (matches && matches.length > 0) {
         // Take the first reasonable version string
-        versionNameMatch = [null, matches[0]];
+        versionNameMatch = ['', matches[0]];
       }
     }
     
