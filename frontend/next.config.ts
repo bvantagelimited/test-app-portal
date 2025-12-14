@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    distDir: 'target/dist',
   /* config options here */
+  /*distDir: 'target/dist',*/
+  output: 'standalone',
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb', // Allow larger APK file uploads

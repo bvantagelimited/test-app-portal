@@ -10,7 +10,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files
-COPY /app/ ./
+COPY target/app/ ./
 
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/uploads && chown -R nextjs:nodejs /app/uploads

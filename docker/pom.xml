@@ -31,7 +31,7 @@
                     <outputDirectory>${project.build.directory}</outputDirectory>
                     <resources>
                         <resource>
-                            <directory>../frontend/target/dist</directory>
+                            <directory>../frontend/target/standalone</directory>
                             <targetPath>app</targetPath>
                             <filtering>false</filtering>
                         </resource>

@@ -85,43 +85,44 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/standalone</outputDirectory>
+                    <resources>
+                        <resource>
+                            <directory>.next/standalone/frontend</directory>
+                            <filtering>false</filtering>
+                        </resource>
+                        <resource>
+                            <directory>.next/static</directory>
+                            <targetPath>.next/static</targetPath>
+                            <filtering>false</filtering>
+                        </resource>
+                        <resource>
+                            <directory>public</directory>
+                            <targetPath>public</targetPath>
+                            <filtering>false</filtering>
+                        </resource>
+                    </resources>
+                </configuration>
                 <executions>
-                    <!--<execution>
-                        <id>copy-server-part</id>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/server</outputDirectory>
-                        </configuration>
-                    </execution>-->
-                    <!--<execution>
-                        <id>copy-frontend</id>
+                    <execution>
+                        <id>create-standalone</id>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
                         <phase>prepare-package</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>.next</directory>
-                                    <filtering>false</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>-->
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
-                        <!-- Clean dist folder -->
-                        <!--<fileset>
-                            <directory>${project.basedir}/dist</directory>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>-->
+                        <!-- Clean .next folder -->
+                        <fileset>
+                            <directory>${project.basedir}/.next</directory>
+                            <!--<followSymlinks>false</followSymlinks>-->
+                        </fileset>
 
                         <!-- Optional: clean node_modules too -->
                         <fileset>
