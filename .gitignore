@@ -2,3 +2,5 @@
 app/.DS_Store
 app/api/.DS_Store
 /.next
+/target/
+/.project

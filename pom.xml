@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.ipification</groupId>
+        <artifactId>ipification-parent</artifactId>
+        <version>79</version>
+    </parent>
+
+    <artifactId>test-app-portal</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>GMiDbox Dashboard Frontend</name>
+    <description>
+        GUI tool for managing and monitoring GMiDbox platform.
+        It provides real-time analytics, authentication logs, and platform management.
+        The dashboard allows users to track authentication activities, configure settings, and generate reports.
+    </description>
+
+    <properties>
+        <!--<project.build.outputTimestamp>1970-01-01T00:00:00Z</project.build.outputTimestamp>-->
+
+        <frontend-maven-plugin.version>1.15.4</frontend-maven-plugin.version>
+        <node.version>v22.15.0</node.version>
+        <npm.version>10.9.4</npm.version>
+        <!--<frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>-->
+    </properties>
+
+    <build>
+        <finalName>test-app-portal</finalName>
+
+        <!--<resources>
+            <resource>
+                <directory>${project.basedir}/src/main/server</directory>
+            </resource>
+        </resources>-->
+
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend-maven-plugin.version}</version>
+                <configuration>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
+                    <!--<workingDirectory>${frontend-src-dir}</workingDirectory>-->
+                    <installDirectory>${project.build.directory}</installDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>npm-install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments> <!-- should look into the ci instead of install -->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-version</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>version --allow-same-version ${project.version}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-build</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <arguments>run dev</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!--<execution>
+                        <id>copy-server-part</id>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/server</outputDirectory>
+                        </configuration>
+                    </execution>-->
+                    <execution>
+                        <id>copy-frontend</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/dist</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>.next</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <!-- Clean dist folder -->
+                        <!--<fileset>
+                            <directory>${project.basedir}/dist</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>-->
+
+                        <!-- Optional: clean node_modules too -->
+                        <fileset>
+                            <directory>${project.basedir}/node_modules</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <!--<plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+
+                <configuration>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <descriptors>
+                        <descriptor>assembly/frontend-dist.xml</descriptor>
+                    </descriptors>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>make-tarball</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <completionGoals>frontend:npm@npm-version</completionGoals>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
