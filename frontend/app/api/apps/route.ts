@@ -38,6 +38,7 @@ export async function GET() {
               fileType: metadata.fileType,
               icon: metadata.icon,
               uploadedBy: metadata.uploadedBy,
+              downloadCount: metadata.downloadCount || 0,
             });
           } catch {
             // Skip invalid metadata files

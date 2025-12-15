@@ -1,7 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+
+interface DownloadRecord {
+  timestamp: string;
+  userAgent: string;
+  browser: string;
+  os: string;
+  ip: string;
+}
+
+function parseUserAgent(userAgent: string): { browser: string; os: string } {
+  let browser = 'Unknown';
+  let os = 'Unknown';
+
+  // Detect browser
+  if (userAgent.includes('Firefox/')) {
+    browser = 'Firefox';
+  } else if (userAgent.includes('Edg/')) {
+    browser = 'Edge';
+  } else if (userAgent.includes('Chrome/')) {
+    browser = 'Chrome';
+  } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
+    browser = 'Safari';
+  } else if (userAgent.includes('Opera') || userAgent.includes('OPR/')) {
+    browser = 'Opera';
+  }
+
+  // Detect OS
+  if (userAgent.includes('Windows')) {
+    os = 'Windows';
+  } else if (userAgent.includes('Mac OS')) {
+    os = 'macOS';
+  } else if (userAgent.includes('Linux')) {
+    os = 'Linux';
+  } else if (userAgent.includes('Android')) {
+    os = 'Android';
+  } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+    os = 'iOS';
+  }
+
+  return { browser, os };
+}
 
 export async function GET(
   request: NextRequest,
@@ -27,6 +68,30 @@ export async function GET(
     if (!existsSync(filePath)) {
       return NextResponse.json({ error: 'APK file not found' }, { status: 404 });
     }
+
+    // Track download
+    const userAgent = request.headers.get('user-agent') || 'Unknown';
+    const { browser, os } = parseUserAgent(userAgent);
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || 
+               'Unknown';
+
+    const downloadRecord: DownloadRecord = {
+      timestamp: new Date().toISOString(),
+      userAgent,
+      browser,
+      os,
+      ip: typeof ip === 'string' ? ip.split(',')[0].trim() : 'Unknown',
+    };
+
+    // Update metadata with download count and history
+    const downloads = metadata.downloads || [];
+    downloads.push(downloadRecord);
+    metadata.downloads = downloads;
+    metadata.downloadCount = downloads.length;
+
+    // Save updated metadata
+    await writeFile(metadataPath, JSON.stringify(metadata, null, 2));
 
     const fileBuffer = await readFile(filePath);
 

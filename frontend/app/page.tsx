@@ -211,7 +211,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-[#f2f2f2]">
       {/* Header with Logo and Title */}
       <div className="bg-white">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -238,7 +238,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
 
           {!uploadResult ? (
