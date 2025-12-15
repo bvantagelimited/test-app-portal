@@ -8,7 +8,7 @@ import path from 'path';
 import os from 'os';
 
 export const runtime = 'nodejs';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 // Common icon patterns in APK
 const ICON_PATTERNS = [
@@ -223,6 +223,7 @@ export async function POST(request: NextRequest) {
     try {
       const zip = await JSZip.loadAsync(buffer);
       iconBase64 = await extractIcon(zip, iconRef);
+      console.log('Icon extraction result:', iconBase64 ? `Got icon (${iconBase64.length} chars)` : 'No icon');
     } catch (e) {
       console.error('Failed to extract icon:', e);
     }

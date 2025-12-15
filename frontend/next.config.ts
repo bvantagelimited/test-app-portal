@@ -6,9 +6,11 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb', // Allow larger APK file uploads
+      bodySizeLimit: '100mb', // Allow larger APK file uploads
     },
+    middlewareClientMaxBodySize: '100mb', // Allow large file uploads through middleware
   },
+  serverExternalPackages: ['adbkit-apkreader'],
 };
 
 export default nextConfig;
