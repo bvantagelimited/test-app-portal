@@ -3,6 +3,7 @@ import { writeFile, mkdir, readFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { auth } from '@/auth';
 
 // Supported app file extensions
 const SUPPORTED_EXTENSIONS = ['.apk', '.ipa', '.aab', '.exe', '.dmg', '.pkg', '.msi', '.deb', '.rpm', '.appimage'];
@@ -16,15 +17,8 @@ function getFileType(filename: string): string {
   const ext = getFileExtension(filename);
   const typeMap: Record<string, string> = {
     '.apk': 'Android',
-    '.aab': 'Android Bundle',
     '.ipa': 'iOS',
-    '.exe': 'Windows',
-    '.msi': 'Windows Installer',
-    '.dmg': 'macOS',
-    '.pkg': 'macOS Package',
-    '.deb': 'Linux (Debian)',
-    '.rpm': 'Linux (RPM)',
-    '.appimage': 'Linux (AppImage)',
+    
   };
   return typeMap[ext] || 'App';
 }
@@ -34,10 +28,18 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user?.email?.endsWith('@ipification.com')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const appName = formData.get('appName') as string || 'Untitled App';
     const version = formData.get('version') as string || '1.0.0';
+    const packageName = formData.get('packageName') as string | null;
+    const appIcon = formData.get('appIcon') as string | null;
     const existingShareId = formData.get('existingShareId') as string | null;
 
     if (!file) {
@@ -82,6 +84,7 @@ export async function POST(request: NextRequest) {
             fileName: previousMetadata.fileName,
             fileSize: previousMetadata.fileSize,
             uploadedAt: previousMetadata.uploadedAt,
+            uploadedBy: previousMetadata.uploadedBy,
           });
 
           // Delete old APK file
@@ -116,17 +119,23 @@ export async function POST(request: NextRequest) {
     const filePath = path.join(fileDir, file.name);
     await writeFile(filePath, buffer);
 
-    // Save metadata
+    // Save metadata with uploader info
     const metadata = {
       id: uploadId,
       fileName: file.name,
       appName,
+      packageName,
       version,
       fileSize: file.size,
       fileType,
       uploadedAt: new Date().toISOString(),
+      uploadedBy: {
+        email: session.user.email,
+        name: session.user.name || undefined,
+      },
       versionHistory: versionHistory.length > 0 ? versionHistory : undefined,
       isUpdate,
+      icon: appIcon || undefined,
     };
     const metadataPath = path.join(fileDir, 'metadata.json');
     await writeFile(metadataPath, JSON.stringify(metadata, null, 2));

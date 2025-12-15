@@ -1,3 +1,9 @@
 **/target/
 **/.project
 **/.settings
+
+# Environment
+.env
+docker/.env
+# TypeScript build info
+*.tsbuildinfo

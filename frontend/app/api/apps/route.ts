@@ -2,9 +2,16 @@ import { NextResponse } from 'next/server';
 import { readFile, readdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { auth } from '@/auth';
 
 export async function GET() {
   try {
+    // Check authentication
+    const session = await auth();
+    if (!session?.user?.email?.endsWith('@ipification.com')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const uploadsDir = path.join(process.cwd(), 'uploads');
 
     if (!existsSync(uploadsDir)) {
@@ -27,6 +34,10 @@ export async function GET() {
               version: metadata.version,
               uploadedAt: metadata.uploadedAt,
               fileSize: metadata.fileSize,
+              packageName: metadata.packageName,
+              fileType: metadata.fileType,
+              icon: metadata.icon,
+              uploadedBy: metadata.uploadedBy,
             });
           } catch {
             // Skip invalid metadata files

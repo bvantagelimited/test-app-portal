@@ -11,6 +11,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3009
+      # Auth configuration - production
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_URL=${AUTH_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3009"]
       interval: 30s
