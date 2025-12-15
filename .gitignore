@@ -1,3 +1,5 @@
 **/target/
 **/.project
 **/.settings
+/.next
+/node_modules
