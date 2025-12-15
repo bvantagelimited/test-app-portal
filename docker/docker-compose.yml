@@ -7,7 +7,7 @@ services:
       - "3009:3009"
     volumes:
       # Persist uploads directory
-      - ./uploads:/app/uploads
+      - ./target/uploads:/app/uploads
     environment:
       - NODE_ENV=production
       - PORT=3009
