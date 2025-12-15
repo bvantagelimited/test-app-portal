@@ -4,6 +4,16 @@ import { NextResponse } from "next/server";
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   
+  // Allow public access to all-apps page
+  if (pathname === "/all-apps") {
+    return NextResponse.next();
+  }
+  
+  // Allow public access to public-apps API
+  if (pathname.startsWith("/api/public-apps")) {
+    return NextResponse.next();
+  }
+  
   // Allow public access to share pages (for clients to download)
   if (pathname.startsWith("/share/")) {
     return NextResponse.next();

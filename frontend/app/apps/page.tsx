@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserMenu } from '@/components/UserMenu';
 
+interface DownloadRecord {
+  timestamp: string;
+  userAgent: string;
+  browser: string;
+  os: string;
+  ip: string;
+}
+
 interface AppItem {
   id: string;
   appName: string;
@@ -17,6 +25,7 @@ interface AppItem {
     email: string;
     name?: string;
   };
+  downloadCount?: number;
 }
 
 export default function AppsPage() {
@@ -26,6 +35,9 @@ export default function AppsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showDownloads, setShowDownloads] = useState<string | null>(null);
+  const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
+  const [loadingDownloads, setLoadingDownloads] = useState(false);
   const router = useRouter();
 
   const fetchApps = async () => {
@@ -86,6 +98,22 @@ export default function AppsPage() {
     }
   };
 
+  const fetchDownloads = async (id: string) => {
+    setLoadingDownloads(true);
+    setShowDownloads(id);
+    try {
+      const response = await fetch(`/api/downloads/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDownloads(data.downloads || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch downloads:', err);
+    } finally {
+      setLoadingDownloads(false);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes >= 1024 * 1024 * 1024) {
       return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB';
@@ -138,7 +166,7 @@ export default function AppsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">My Apps</h1>
-            <p className="text-gray-500 text-sm mt-1">Manage your uploaded applications</p>
+            {/* <p className="text-gray-500 text-sm mt-1">Manage your uploaded applications</p> */}
           </div>
           <button
             onClick={() => router.push('/')}
@@ -227,9 +255,15 @@ export default function AppsPage() {
                       </div>
                       <div className="text-right text-sm text-gray-500 hidden md:block">
                         <p>{formatDate(app.uploadedAt)}</p>
-                        {app.uploadedBy && (
-                          <p className="text-xs text-gray-400 mt-1">{app.uploadedBy.email}</p>
-                        )}
+                        <button
+                          onClick={() => fetchDownloads(app.id)}
+                          className="flex items-center justify-end gap-1 text-xs text-gray-400 mt-1 hover:text-[#fc1c44] transition-colors"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          <span>{app.downloadCount || 0} downloads</span>
+                        </button>
                       </div>
                     </div>
 
@@ -333,6 +367,66 @@ export default function AppsPage() {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Downloads Modal */}
+      {showDownloads && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-xl">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Download History</h2>
+              <button
+                onClick={() => { setShowDownloads(null); setDownloads([]); }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {loadingDownloads ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#fc1c44]"></div>
+                </div>
+              ) : downloads.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <svg className="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  <p>No downloads yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {downloads.map((download, index) => (
+                    <div key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                              {download.browser}
+                            </span>
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              {download.os}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-2 truncate" title={download.userAgent}>
+                            {download.userAgent}
+                          </p>
+                        </div>
+                        <div className="text-right text-xs text-gray-500 flex-shrink-0">
+                          <p>{new Date(download.timestamp).toLocaleDateString()}</p>
+                          <p>{new Date(download.timestamp).toLocaleTimeString()}</p>
+                          <p className="text-gray-400 mt-1">{download.ip}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
