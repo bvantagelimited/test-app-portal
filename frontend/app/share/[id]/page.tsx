@@ -19,6 +19,7 @@ interface Metadata {
   fileType?: string;
   uploadedAt: string;
   versionHistory?: VersionHistory[];
+  icon?: string;
 }
 
 export default function SharePage() {
@@ -171,54 +172,60 @@ export default function SharePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header with Logo */}
-      <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
-        <img 
-          src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NC44OTIiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NC44OTIgNDUiPjxkZWZzPjxzdHlsZT4uYXtmaWxsOiNmZmY7fS5ie2ZpbGw6I2ZiMWM0NDt9PC9zdHlsZT48L2RlZnM+PHJlY3QgY2xhc3M9ImEiIHdpZHRoPSIzMSIgaGVpZ2h0PSIyNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi45OTkgOSkiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDApIj48cGF0aCBjbGFzcz0iYiIgZD0iTTcuNDIxLDYuNjc1LDkuNjU3LDQuNTA3VjBIMFY2LjY3NVoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyLjM4NSAxNS4yOTUpIi8+PHBhdGggY2xhc3M9ImIiIGQ9Ik0wLDQ1VjBINDQuODkyVjMyLjAxOUwzMS45NjcsNDQuOTc1Wk0xOC4yMDgsMTEuMDgzVjMzLjk0MWg0LjJWMjYuMTgySDMxLjU1bDQuNjkzLTQuNTA4aC4wMjVWMTEuMDgzWm0tOS41NTgsMFYzMy45NDFoNC4yVjExLjA4M1oiLz48L2c+PC9zdmc+"
-          alt="IPification Logo"
-          className="h-10 w-auto"
-        />
-      </div>
-
-      <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="max-w-lg mx-auto">
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="max-w-md mx-auto">
           {/* Main Card */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
-            {/* Header */}
-            <div className="bg-[#fc1c44] px-6 py-6 text-center">
-              <h1 className="text-xl md:text-2xl font-bold text-white mb-1">
-                {metadata.appName}
-              </h1>
-              <span className="text-white/80 text-sm">
-                Version {metadata.version}
-              </span>
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+            {/* Header with App Icon and Name - centered */}
+            <div className="px-6 pt-6 pb-4">
+              <div className="flex flex-col items-center gap-3 text-center">
+                {/* App Icon */}
+                {metadata.icon ? (
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg ring-2 ring-gray-100">
+                    <img src={metadata.icon} alt={metadata.appName} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#fc1c44] to-[#d9183b] flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-2xl">
+                      {metadata.appName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                
+                {/* App Name and Version */}
+                <div>
+                  <h1 className="text-xl md:text-2xl font-bold text-[#fc1c44]">
+                    {metadata.appName}
+                  </h1>
+                  <p className="text-gray-500 text-sm">
+                    Version {metadata.version}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Content */}
             <div className="p-6">
-              {/* Quick Stats */}
+              {/* Quick Stats - without labels */}
               <div className="grid grid-cols-3 gap-3 mb-6">
                 <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
                   <svg className="w-6 h-6 mx-auto mb-2 text-[#fc1c44]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <p className="text-gray-900 font-semibold text-sm">{formatFileSize(metadata.fileSize)}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Size</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
                   <svg className="w-6 h-6 mx-auto mb-2 text-[#fc1c44]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <p className="text-gray-900 font-semibold text-sm">{formatDate(metadata.uploadedAt)}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Updated</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-200">
                   <svg className="w-6 h-6 mx-auto mb-2 text-[#fc1c44]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="text-gray-900 font-semibold text-sm">{formatTime(metadata.uploadedAt)}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">Time</p>
                 </div>
               </div>
 
