@@ -89,7 +89,7 @@
                     <outputDirectory>${project.build.directory}/standalone</outputDirectory>
                     <resources>
                         <resource>
-                            <directory>.next/standalone/frontend</directory>
+                            <directory>.next/standalone</directory>
                             <filtering>false</filtering>
                         </resource>
                         <resource>
