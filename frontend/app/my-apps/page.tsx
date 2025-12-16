@@ -151,7 +151,7 @@ export default function AppsPage() {
           </div>
           <div className="flex items-center gap-6">
             <a
-              href="/apps"
+              href="/my-apps"
               className="text-sm font-medium text-[#fc1c44] transition-colors whitespace-nowrap"
             >
               My Apps
@@ -169,7 +169,7 @@ export default function AppsPage() {
             {/* <p className="text-gray-500 text-sm mt-1">Manage your uploaded applications</p> */}
           </div>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/upload')}
             className="px-4 py-2 bg-[#fc1c44] text-white rounded-xl font-medium hover:bg-[#d9183b] transition-colors flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,13 +210,7 @@ export default function AppsPage() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No apps uploaded yet</h3>
-            <p className="text-gray-500 mb-6">Upload your first app to get started</p>
-            <button
-              onClick={() => router.push('/')}
-              className="px-6 py-3 bg-[#fc1c44] text-white rounded-xl font-medium hover:bg-[#d9183b] transition-colors"
-            >
-              Upload Your First App
-            </button>
+            
           </div>
         ) : (
           <div className="grid gap-4">
@@ -227,17 +221,27 @@ export default function AppsPage() {
               >
                 <div className="flex items-start gap-4">
                   {/* App Icon */}
-                  {app.icon ? (
-                    <div className="w-14 h-14 rounded-xl overflow-hidden shadow-md flex-shrink-0">
-                      <img src={app.icon} alt={app.appName} className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#fc1c44] to-[#d9183b] flex items-center justify-center flex-shrink-0 shadow-md">
+                  <div className="flex-shrink-0">
+                    {app.icon ? (
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shadow-md">
+                        <img 
+                          src={app.icon} 
+                          alt={app.appName} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.parentElement!.style.display = 'none';
+                            target.parentElement!.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-[#fc1c44] to-[#d9183b] flex items-center justify-center shadow-md ${app.icon ? 'hidden' : ''}`}>
                       <span className="text-white font-bold text-xl">
                         {app.appName.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                  )}
+                  </div>
 
                   {/* App Info */}
                   <div className="flex-1 min-w-0">

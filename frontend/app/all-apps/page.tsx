@@ -97,13 +97,27 @@ export default function BrowsePage() {
             </div>
           </div>
 {session?.user ? (
-            <UserMenu />
+            <div className="flex items-center gap-4">
+              <a
+                href="/my-apps"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                My Apps
+              </a>
+              <a
+                href="/upload"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors"
+              >
+                Upload App
+              </a>
+              <UserMenu />
+            </div>
           ) : (
             <a
               href="/login"
               className="px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors"
             >
-             Sign in to Upload Apps
+             Sign in
             </a>
           )}
         </div>
@@ -146,15 +160,19 @@ export default function BrowsePage() {
                       <img 
                         src={app.icon} 
                         alt={app.appName}
-                        className="w-16 h-16 rounded-xl object-cover"
+                        className="w-16 h-16 rounded-xl object-cover shadow-md"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
-                      <div className="w-16 h-16 bg-gradient-to-br from-[#fc1c44] to-[#ff6b6b] rounded-xl flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {app.appName?.charAt(0)?.toUpperCase() || 'A'}
-                        </span>
-                      </div>
-                    )}
+                    ) : null}
+                    <div className={`w-16 h-16 bg-gradient-to-br from-[#fc1c44] to-[#ff6b6b] rounded-xl flex items-center justify-center shadow-md ${app.icon ? 'hidden' : ''}`}>
+                      <span className="text-white font-bold text-lg">
+                        {app.appName?.charAt(0)?.toUpperCase() || 'A'}
+                      </span>
+                    </div>
                   </div>
                   
                   {/* App Info */}
