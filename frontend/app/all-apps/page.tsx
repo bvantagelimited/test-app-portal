@@ -148,9 +148,10 @@ export default function BrowsePage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {apps.map((app) => (
-              <div
+              <a
                 key={app.id}
-                className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-lg transition-shadow"
+                href={`/share/${app.id}`}
+                className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-lg transition-shadow block cursor-pointer no-underline relative"
               >
                 <div className="flex items-start gap-4">
                   {/* App Icon */}
@@ -206,14 +207,17 @@ export default function BrowsePage() {
 
                 {/* Actions - View and Share only */}
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
-                  <a
-                    href={`/share/${app.id}`}
+                  <span
                     className="w-1/2 px-3 py-2 bg-[#fc1c44] text-white text-sm font-medium rounded-xl hover:bg-[#d9183b] transition-colors text-center"
                   >
                     View
-                  </a>
+                  </span>
                   <button
-                    onClick={() => copyShareLink(app.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      copyShareLink(app.id);
+                    }}
                     className="w-1/2 px-3 py-2 bg-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 border border-gray-300"
                     title="Copy share link"
                   >
@@ -231,7 +235,7 @@ export default function BrowsePage() {
                     )}
                   </button>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}

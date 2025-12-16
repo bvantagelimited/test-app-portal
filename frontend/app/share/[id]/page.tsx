@@ -100,9 +100,9 @@ export default function SharePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center flex flex-col items-center">
+          <div className="relative w-16 h-16">
             <div className="w-16 h-16 border-4 border-[#fc1c44]/20 rounded-full"></div>
             <div className="w-16 h-16 border-4 border-[#fc1c44] rounded-full animate-spin border-t-transparent absolute top-0 left-0"></div>
           </div>

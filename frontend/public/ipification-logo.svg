@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 44.892 45">
+  <defs>
+    <style>.a{fill:#fff;}.b{fill:#fb1c44;}</style>
+  </defs>
+  <rect class="a" width="44.892" height="45"/>
+  <rect class="a" width="31" height="26" transform="translate(6.999 9)"/>
+  <g transform="translate(0 0)">
+    <path class="b" d="M7.421,6.675,9.657,4.507V0H0V6.675Z" transform="translate(22.385 15.295)"/>
+    <path class="b" d="M0,45V0H44.892V32.019L31.967,44.975ZM18.208,11.083V33.941h4.2V26.182H31.55l4.693-4.508h.025V11.083Zm-9.558,0V33.941h4.2V11.083Z"/>
+  </g>
+</svg>
