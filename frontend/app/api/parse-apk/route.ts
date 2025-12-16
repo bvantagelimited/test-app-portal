@@ -120,13 +120,32 @@ async function extractIcon(zip: JSZip, iconRef?: string): Promise<string | undef
     }
   }
 
-  // Fallback for obfuscated APKs: find PNG files with typical icon sizes (2KB-50KB)
-  // Icons are typically square and between 48x48 to 512x512 pixels
+  // Fallback for obfuscated APKs: find PNG files in mipmap/drawable folders only
+  // Exclude files that look like third-party app icons (whatsapp, facebook, etc.)
   console.log('Trying fallback for obfuscated APK...');
   
-  const pngCandidates: { path: string; size: number }[] = [];
+  const EXCLUDED_ICON_NAMES = [
+    'whatsapp', 'facebook', 'twitter', 'instagram', 'telegram', 'google', 
+    'youtube', 'linkedin', 'snapchat', 'tiktok', 'wechat', 'messenger',
+    'viber', 'skype', 'discord', 'slack', 'zoom', 'teams'
+  ];
+  
+  const pngCandidates: { path: string; size: number; priority: number }[] = [];
   
   for (const filePath of allPngInRes) {
+    const lowerPath = filePath.toLowerCase();
+    
+    // Skip files that look like third-party app icons
+    if (EXCLUDED_ICON_NAMES.some(name => lowerPath.includes(name))) {
+      console.log('Skipping third-party icon:', filePath);
+      continue;
+    }
+    
+    // Skip files in drawable folders that aren't icon-related
+    if (lowerPath.includes('drawable') && !lowerPath.includes('icon') && !lowerPath.includes('logo')) {
+      continue;
+    }
+    
     const file = zip.file(filePath);
     if (file && !file.dir) {
       try {
@@ -135,7 +154,17 @@ async function extractIcon(zip: JSZip, iconRef?: string): Promise<string | undef
         if (buffer.length >= 2000 && buffer.length <= 100000 &&
             buffer[0] === 0x89 && buffer[1] === 0x50 && 
             buffer[2] === 0x4E && buffer[3] === 0x47) {
-          pngCandidates.push({ path: filePath, size: buffer.length });
+          // Prioritize mipmap folders and files with 'icon' or 'logo' in name
+          let priority = 0;
+          if (lowerPath.includes('mipmap')) priority += 10;
+          if (lowerPath.includes('ic_launcher')) priority += 20;
+          if (lowerPath.includes('icon')) priority += 5;
+          if (lowerPath.includes('logo')) priority += 5;
+          if (lowerPath.includes('xxxhdpi')) priority += 4;
+          if (lowerPath.includes('xxhdpi')) priority += 3;
+          if (lowerPath.includes('xhdpi')) priority += 2;
+          
+          pngCandidates.push({ path: filePath, size: buffer.length, priority });
         }
       } catch (e) {
         // Skip
@@ -143,17 +172,29 @@ async function extractIcon(zip: JSZip, iconRef?: string): Promise<string | undef
     }
   }
   
-  // Sort by size descending (larger icons are usually better quality)
-  pngCandidates.sort((a, b) => b.size - a.size);
-  console.log('PNG candidates by size:', pngCandidates.slice(0, 5));
+  // Sort by priority first, then by size
+  pngCandidates.sort((a, b) => {
+    if (b.priority !== a.priority) return b.priority - a.priority;
+    return b.size - a.size;
+  });
+  console.log('PNG candidates by priority:', pngCandidates.slice(0, 5));
   
-  // Try the largest ones first (likely to be high-res icons)
-  for (const candidate of pngCandidates.slice(0, 10)) {
+  // Only use fallback if we have high-confidence candidates (priority > 0)
+  // This prevents picking random images from obfuscated APKs
+  const highPriorityCandidates = pngCandidates.filter(c => c.priority > 0);
+  
+  if (highPriorityCandidates.length === 0) {
+    console.log('No high-confidence icon candidates found, skipping fallback to avoid wrong icon');
+    return undefined;
+  }
+  
+  // Try the highest priority ones first
+  for (const candidate of highPriorityCandidates.slice(0, 10)) {
     const iconFile = zip.file(candidate.path);
     if (iconFile) {
       try {
         const iconBuffer = await iconFile.async('nodebuffer');
-        console.log('Extracted icon from obfuscated APK:', candidate.path, 'size:', candidate.size);
+        console.log('Extracted icon from obfuscated APK:', candidate.path, 'priority:', candidate.priority, 'size:', candidate.size);
         return `data:image/png;base64,${iconBuffer.toString('base64')}`;
       } catch (e) {
         // Continue to next

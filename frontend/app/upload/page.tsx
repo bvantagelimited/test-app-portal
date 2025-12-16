@@ -297,17 +297,41 @@ export default function Home() {
                       <div className="text-center w-full">
                         {file ? (
                           <div className="flex flex-col items-center">
-                            {appIcon ? (
-                              <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-lg mb-4 ring-2 ring-[#fc1c44]/20">
-                                <img src={appIcon} alt="App Icon" className="h-full w-full object-cover" />
-                              </div>
-                            ) : (
-                              <div className="h-16 w-16 rounded-full bg-[#fc1c44]/10 flex items-center justify-center mb-4">
-                                <svg className="h-8 w-8 text-[#fc1c44]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <div className="relative group/icon">
+                              {appIcon ? (
+                                <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-lg mb-4 ring-2 ring-[#fc1c44]/20 cursor-pointer">
+                                  <img src={appIcon} alt="App Icon" className="h-full w-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="h-20 w-20 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4 cursor-pointer">
+                                  <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                              )}
+                              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl opacity-0 group-hover/icon:opacity-100 transition-opacity cursor-pointer mb-4">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="sr-only"
+                                  onChange={(e) => {
+                                    const iconFile = e.target.files?.[0];
+                                    if (iconFile) {
+                                      const reader = new FileReader();
+                                      reader.onload = (event) => {
+                                        setAppIcon(event.target?.result as string);
+                                      };
+                                      reader.readAsDataURL(iconFile);
+                                    }
+                                  }}
+                                />
+                                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                              </div>
-                            )}
+                              </label>
+                            </div>
+                            <p className="text-xs text-gray-400 mb-2">Click icon to change</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white truncate max-w-sm">
                               {file.name}
                             </p>
@@ -315,27 +339,32 @@ export default function Home() {
                               {(file.size / 1024 / 1024).toFixed(2)} MB
                             </p>
                             {parsing && (
-                              <div className="flex items-center gap-2 mt-4 text-sm text-[#fc1c44] animate-pulse">
-                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Parsing file info...
+                              <div className="flex flex-col items-center gap-3 mt-4">
+                                <div className="flex items-center gap-2 text-sm text-[#fc1c44]">
+                                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span className="font-medium">Parsing app info...</span>
+                                </div>
+                                <p className="text-xs text-gray-500">Extracting version, package name, and icon</p>
                               </div>
                             )}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setFile(null);
-                                setAppName('');
-                                setVersion('');
-                                setAppIcon(null);
-                              }}
-                              className="mt-6 text-sm font-medium text-red-500 hover:text-red-700 transition-colors"
-                            >
-                              Remove file
-                            </button>
+                            {!parsing && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setFile(null);
+                                  setAppName('');
+                                  setVersion('');
+                                  setAppIcon(null);
+                                }}
+                                className="mt-6 text-sm font-medium text-red-500 hover:text-red-700 transition-colors"
+                              >
+                                Remove file
+                              </button>
+                            )}
                           </div>
                         ) : (
                           <>
@@ -431,7 +460,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    disabled={!file || uploading || (isUpdateMode && !existingShareId)}
+                    disabled={!file || uploading || parsing || (isUpdateMode && !existingShareId)}
                     className="w-[250px] mx-auto block relative group overflow-hidden bg-[#fc1c44] text-white py-3 px-4 rounded-xl font-semibold text-sm hover:bg-[#d9183b] focus:outline-none focus:ring-4 focus:ring-[#fc1c44]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-[#fc1c44]/30 hover:shadow-[#fc1c44]/50 transform hover:-translate-y-0.5 active:translate-y-0"
                   >
                     <span className="relative z-10 flex items-center justify-center gap-2">
