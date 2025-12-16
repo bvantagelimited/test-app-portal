@@ -1,6 +1,6 @@
 {
   "name": "app-portal",
-  "version": "1.0.3",
+  "version": "1.0.4-SNAPSHOT",
   "private": true,
   "scripts": {
     "dev": "next dev",
