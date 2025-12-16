@@ -9,6 +9,11 @@
         <!-- fix: bug fix for the project. -->
         <!-- update: updated some part of the project. -->
         <!-- remove: removed some functionality from the project. -->
+        <release version="1.0.3" date="2025-12-16" description="">
+            <action dev="tinh" type="fix" date="2025-12-16">
+                Bug Fixes: Display correct OG information when sharing links on WhatsApp
+            </action>
+        </release>
         <release version="1.0.2" date="2025-12-16" description="">
             <action dev="tinh" type="update" date="2025-12-16">
                 Bug Fixes: App Logo
