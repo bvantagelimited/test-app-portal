@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   
+  // Redirect root to all-apps page (public)
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/all-apps", req.url));
+  }
+  
   // Allow public access to all-apps page
   if (pathname === "/all-apps") {
     return NextResponse.next();
