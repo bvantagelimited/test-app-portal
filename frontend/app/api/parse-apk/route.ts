@@ -6,6 +6,8 @@ import { writeFile, unlink, mkdir, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import os from 'os';
+import plist from 'plist';
+import bplistParser from 'bplist-parser';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -163,6 +165,164 @@ async function extractIcon(zip: JSZip, iconRef?: string): Promise<string | undef
   return undefined;
 }
 
+// Parse IPA file to extract bundle ID, version, and icon
+async function parseIpa(buffer: Buffer, fileName: string): Promise<NextResponse> {
+  try {
+    const zip = await JSZip.loadAsync(buffer);
+    const files = Object.keys(zip.files);
+    
+    // Find the .app folder inside Payload
+    const appFolder = files.find(f => f.match(/^Payload\/[^\/]+\.app\/$/));
+    if (!appFolder) {
+      console.log('No .app folder found in IPA');
+      return NextResponse.json({
+        success: true,
+        appName: fileName.replace('.ipa', ''),
+      });
+    }
+    
+    const appPath = appFolder;
+    console.log('Found app folder:', appPath);
+    
+    // Read Info.plist
+    const infoPlistPath = `${appPath}Info.plist`;
+    const infoPlistFile = zip.file(infoPlistPath);
+    
+    let bundleId: string | undefined;
+    let version: string | undefined;
+    let appName: string | undefined;
+    let iconName: string | undefined;
+    
+    if (infoPlistFile) {
+      const plistData = await infoPlistFile.async('nodebuffer');
+      let plistContent: Record<string, unknown> | null = null;
+      
+      // Try XML plist first
+      try {
+        plistContent = plist.parse(plistData.toString('utf8')) as Record<string, unknown>;
+        console.log('Parsed XML plist successfully');
+      } catch (e) {
+        console.log('Not XML plist, trying binary format...');
+        // Try binary plist
+        try {
+          const parsed = bplistParser.parseBuffer(plistData);
+          if (parsed && parsed.length > 0) {
+            plistContent = parsed[0] as Record<string, unknown>;
+            console.log('Parsed binary plist successfully');
+          }
+        } catch (e2) {
+          console.error('Failed to parse binary plist:', e2);
+        }
+      }
+      
+      if (plistContent) {
+        bundleId = plistContent.CFBundleIdentifier as string;
+        version = (plistContent.CFBundleShortVersionString || plistContent.CFBundleVersion) as string;
+        appName = (plistContent.CFBundleDisplayName || plistContent.CFBundleName) as string;
+        
+        // Get icon file names from plist
+        const icons = plistContent.CFBundleIcons as Record<string, unknown>;
+        const primaryIcon = icons?.CFBundlePrimaryIcon as Record<string, unknown>;
+        const iconFiles = primaryIcon?.CFBundleIconFiles as string[];
+        if (iconFiles && iconFiles.length > 0) {
+          iconName = iconFiles[iconFiles.length - 1];
+        }
+        
+        console.log('Parsed Info.plist:', { bundleId, version, appName, iconName });
+      }
+    }
+    
+    // Extract icon
+    let iconBase64: string | undefined;
+    
+    // List all files in app folder for debugging
+    const appFiles = files.filter(f => f.startsWith(appPath));
+    console.log('All files in app folder:', appFiles.slice(0, 30)); // First 30 files
+    
+    const pngFiles = files.filter(f => f.startsWith(appPath) && f.endsWith('.png'));
+    console.log('PNG files in app folder:', pngFiles);
+    
+    // Check for Assets.car (compiled asset catalog)
+    const assetsCar = files.find(f => f.includes('Assets.car'));
+    if (assetsCar) {
+      console.log('Found Assets.car - icons are compiled in asset catalog');
+    }
+    
+    if (iconName) {
+      // Try different icon paths
+      const iconPaths = [
+        `${appPath}${iconName}@3x.png`,
+        `${appPath}${iconName}@2x.png`,
+        `${appPath}${iconName}.png`,
+        `${appPath}AppIcon60x60@3x.png`,
+        `${appPath}AppIcon60x60@2x.png`,
+        `${appPath}AppIcon76x76@2x~ipad.png`,
+      ];
+      
+      console.log('Trying icon paths:', iconPaths);
+      
+      for (const iconPath of iconPaths) {
+        const iconFile = zip.file(iconPath);
+        if (iconFile) {
+          try {
+            const iconBuffer = await iconFile.async('nodebuffer');
+            iconBase64 = `data:image/png;base64,${iconBuffer.toString('base64')}`;
+            console.log('Found icon at:', iconPath);
+            break;
+          } catch (e) {
+            console.error('Failed to extract icon:', e);
+          }
+        }
+      }
+    }
+    
+    // If no icon found yet, search for any AppIcon
+    if (!iconBase64) {
+      const iconFiles = files.filter(f => 
+        f.startsWith(appPath) && 
+        (f.includes('AppIcon') || f.includes('Icon')) && 
+        f.endsWith('.png')
+      ).sort((a, b) => b.length - a.length); // Prefer longer names (usually higher res)
+      
+      console.log('Fallback icon search, found files:', iconFiles);
+      
+      for (const iconPath of iconFiles) {
+        const iconFile = zip.file(iconPath);
+        if (iconFile) {
+          try {
+            const iconBuffer = await iconFile.async('nodebuffer');
+            if (iconBuffer.length > 100) { // Skip tiny files
+              iconBase64 = `data:image/png;base64,${iconBuffer.toString('base64')}`;
+              console.log('Found icon at:', iconPath);
+              break;
+            }
+          } catch (e) {
+            // Continue
+          }
+        }
+      }
+    }
+    
+    if (!iconBase64) {
+      console.log('No icon found in IPA');
+    }
+    
+    return NextResponse.json({
+      success: true,
+      versionName: version,
+      packageName: bundleId,
+      appName: appName || fileName.replace('.ipa', ''),
+      icon: iconBase64,
+    });
+  } catch (error) {
+    console.error('IPA parsing error:', error);
+    return NextResponse.json({
+      success: true,
+      appName: fileName.replace('.ipa', ''),
+    });
+  }
+}
+
 export async function POST(request: NextRequest) {
   let tempFilePath: string | null = null;
   
@@ -180,12 +340,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    if (!file.name.endsWith('.apk')) {
-      return NextResponse.json({ error: 'File must be an APK' }, { status: 400 });
+    const isIpa = file.name.toLowerCase().endsWith('.ipa');
+    const isApk = file.name.toLowerCase().endsWith('.apk');
+
+    if (!isApk && !isIpa) {
+      return NextResponse.json({ error: 'File must be an APK or IPA' }, { status: 400 });
     }
 
-    // Write file to temp directory for adbkit-apkreader
-    const tempDir = path.join(os.tmpdir(), 'apk-parser');
+    // Write file to temp directory
+    const tempDir = path.join(os.tmpdir(), 'app-parser');
     if (!existsSync(tempDir)) {
       await mkdir(tempDir, { recursive: true });
     }
@@ -194,6 +357,11 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     await writeFile(tempFilePath, buffer);
+
+    // Handle IPA files
+    if (isIpa) {
+      return await parseIpa(buffer, file.name);
+    }
 
     // Parse APK using adbkit-apkreader
     const reader = await ApkReader.open(tempFilePath);

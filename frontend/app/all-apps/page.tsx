@@ -185,8 +185,14 @@ export default function BrowsePage() {
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       {app.fileType && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
-                          {app.fileType.toUpperCase()}
+                        <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                          app.fileType === 'Android' 
+                            ? 'bg-green-100 text-green-700' 
+                            : app.fileType === 'iOS' 
+                              ? 'bg-blue-100 text-blue-700' 
+                              : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {app.fileType}
                         </span>
                       )}
                       {session?.user && app.uploadedBy && (

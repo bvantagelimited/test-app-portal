@@ -58,8 +58,8 @@ export default function Home() {
     setFile(selectedFile);
     setError(null);
     
-    // Auto-parse APK to extract version and app name (only for APK files)
-    if (fileExt === '.apk') {
+    // Auto-parse APK/IPA to extract version and app name
+    if (fileExt === '.apk' || fileExt === '.ipa') {
       setParsing(true);
       try {
         const formData = new FormData();

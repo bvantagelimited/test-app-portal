@@ -11,13 +11,16 @@
   "dependencies": {
     "@types/jszip": "^3.4.0",
     "@types/multer": "^2.0.0",
+    "@types/plist": "^3.0.5",
     "@types/uuid": "^10.0.0",
     "adbkit-apkreader": "^3.2.0",
+    "bplist-parser": "^0.3.2",
     "jszip": "^3.10.1",
     "multer": "^2.0.2",
     "next": "16.0.10",
     "next-auth": "^5.0.0-beta.30",
     "pako": "^2.1.0",
+    "plist": "^3.1.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "uuid": "^13.0.0"

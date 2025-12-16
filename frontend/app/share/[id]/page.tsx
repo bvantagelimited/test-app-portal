@@ -250,7 +250,13 @@ export default function SharePage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-gray-900 font-medium text-sm truncate">{metadata.fileName}</p>
-                    <p className="text-gray-500 text-xs mt-0.5">{metadata.fileType || 'Application'}</p>
+                    <span className={`text-xs mt-0.5 px-2 py-0.5 rounded-full font-medium ${
+                      metadata.fileType === 'Android' 
+                        ? 'bg-green-100 text-green-700' 
+                        : metadata.fileType === 'iOS' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-gray-100 text-gray-600'
+                    }`}>{metadata.fileType || 'Application'}</span>
                   </div>
                 </div>
               </div>

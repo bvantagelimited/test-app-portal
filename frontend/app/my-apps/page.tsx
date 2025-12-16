@@ -251,7 +251,13 @@ export default function AppsPage() {
                         <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                           <span className="bg-gray-100 px-2 py-0.5 rounded-full">v{app.version}</span>
                           <span>{formatFileSize(app.fileSize)}</span>
-                          <span className="hidden sm:inline">{app.fileType || 'App'}</span>
+                          <span className={`hidden sm:inline px-2 py-0.5 rounded-full font-medium ${
+                            app.fileType === 'Android' 
+                              ? 'bg-green-100 text-green-700' 
+                              : app.fileType === 'iOS' 
+                                ? 'bg-blue-100 text-blue-700' 
+                                : 'bg-gray-100 text-gray-600'
+                          }`}>{app.fileType || 'App'}</span>
                         </div>
                         {app.packageName && (
                           <p className="text-xs text-gray-400 mt-1 truncate">{app.packageName}</p>
