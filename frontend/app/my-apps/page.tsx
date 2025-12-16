@@ -152,7 +152,7 @@ export default function AppsPage() {
           <div className="flex items-center gap-6">
             <a
               href="/my-apps"
-              className="text-sm font-medium text-[#fc1c44] transition-colors whitespace-nowrap"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap underline"
             >
               My Apps
             </a>
@@ -175,7 +175,7 @@ export default function AppsPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Upload New
+            Upload App
           </button>
         </div>
 

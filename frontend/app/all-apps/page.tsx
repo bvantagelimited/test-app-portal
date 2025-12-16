@@ -82,40 +82,39 @@ export default function BrowsePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href="/">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <a href="/" className="flex-shrink-0">
               <img 
                 src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NC44OTIiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NC44OTIgNDUiPjxkZWZzPjxzdHlsZT4uYXtmaWxsOiNmZmY7fS5ie2ZpbGw6I2ZiMWM0NDt9PC9zdHlsZT48L2RlZnM+PHJlY3QgY2xhc3M9ImEiIHdpZHRoPSIzMSIgaGVpZ2h0PSIyNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNi45OTkgOSkiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwIDApIj48cGF0aCBjbGFzcz0iYiIgZD0iTTcuNDIxLDYuNjc1LDkuNjU3LDQuNTA3VjBIMFY2LjY3NVoiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyLjM4NSAxNS4yOTUpIi8+PHBhdGggY2xhc3M9ImIiIGQ9Ik0wLDQ1VjBINDQuODkyVjMyLjAxOUwzMS45NjcsNDQuOTc1Wk0xOC4yMDgsMTEuMDgzVjMzLjk0MWg0LjJWMjYuMTgySDMxLjU1bDQuNjkzLTQuNTA4aC4wMjVWMTEuMDgzWm0tOS41NTgsMFYzMy45NDFoNC4yVjExLjA4M1oiLz48L2c+PC9zdmc+"
                 alt="IPification Logo"
                 className="h-8 w-auto"
               />
             </a>
-            <div className="border-l border-gray-300 pl-4">
-              <h1 className="text-lg font-semibold text-gray-900">App Distribution</h1>
-              <p className="text-xs text-gray-500">Browse all available apps</p>
+            <div className="border-l border-gray-300 pl-2 sm:pl-4 hidden sm:block">
+              <h1 className="text-lg font-semibold text-gray-900 whitespace-nowrap">App Distribution</h1>
             </div>
           </div>
 {session?.user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               <a
                 href="/my-apps"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors underline whitespace-nowrap hidden sm:block"
               >
                 My Apps
               </a>
               <a
                 href="/upload"
-                className="px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors"
+                className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors whitespace-nowrap"
               >
-                Upload App
+                Upload
               </a>
               <UserMenu />
             </div>
           ) : (
             <a
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors"
+              className="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors whitespace-nowrap"
             >
              Sign in
             </a>
@@ -213,9 +212,12 @@ export default function BrowsePage() {
                     title="Copy share link"
                   >
                     {copiedId === app.id ? (
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                      <>
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-green-600">Copied</span>
+                      </>
                     ) : (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

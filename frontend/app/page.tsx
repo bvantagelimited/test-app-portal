@@ -349,25 +349,25 @@ export default function Home() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                               </svg>
                             </div>
+                            <label
+                              htmlFor="file-upload"
+                              className="absolute inset-0 cursor-pointer"
+                            >
+                              <input
+                                id="file-upload"
+                                name="file-upload"
+                                type="file"
+                                accept=".apk,.ipa"
+                                className="sr-only"
+                                onChange={handleFileChange}
+                              />
+                            </label>
                             <div className="flex text-sm leading-6 text-gray-600 dark:text-gray-400 justify-center">
-                              <label
-                                htmlFor="file-upload"
-                                className="relative cursor-pointer rounded-md font-semibold text-[#fc1c44] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#fc1c44] focus-within:ring-offset-2 hover:text-[#fc1c44]/80"
-                              >
-                                <span>Click to upload</span>
-                                <input
-                                  id="file-upload"
-                                  name="file-upload"
-                                  type="file"
-                                  accept=".apk,.ipa,.aab,.exe,.dmg,.pkg,.msi,.deb,.rpm,.appimage"
-                                  className="sr-only"
-                                  onChange={handleFileChange}
-                                />
-                              </label>
+                              <span className="font-semibold text-[#fc1c44]">Click to upload</span>
                               <p className="pl-1">or drag and drop</p>
                             </div>
                             <p className="text-xs leading-5 text-gray-500 dark:text-gray-500 mt-2">
-                              APK, IPA, AAB, EXE, DMG, PKG, MSI...
+                              APK, IPA
                             </p>
                           </>
                         )}

@@ -23,3 +23,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), Inter, sans-serif;
 }
+
+button, a {
+  cursor: pointer;
+}
