@@ -18,7 +18,7 @@
     </description>
     
     <build>
-        <finalName>test-app-portal-image</finalName>
+        <finalName>test-app-portal</finalName>
         
         <!--<resources>
             <resource></resource>

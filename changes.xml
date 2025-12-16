@@ -9,6 +9,11 @@
         <!-- fix: bug fix for the project. -->
         <!-- update: updated some part of the project. -->
         <!-- remove: removed some functionality from the project. -->
+        <release version="1.0.1" date="2025-12-16" description="">
+            <action dev="alex" type="update" date="2025-12-16">
+                Changed image repo details
+            </action>
+        </release>
         <release version="1.0.0" date="2025-12-15" description="">
             <action dev="alex" type="add" date="2025-12-15">
                 Initial version
