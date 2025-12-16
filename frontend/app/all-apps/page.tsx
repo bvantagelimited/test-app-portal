@@ -103,7 +103,7 @@ export default function BrowsePage() {
               href="/login"
               className="px-4 py-2 text-sm font-medium text-white bg-[#fc1c44] rounded-xl hover:bg-[#d9183b] transition-colors"
             >
-              Sign In
+             Sign in to Upload Apps
             </a>
           )}
         </div>
@@ -191,7 +191,7 @@ export default function BrowsePage() {
                   </a>
                   <button
                     onClick={() => copyShareLink(app.id)}
-                    className="w-1/2 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    className="w-1/2 px-3 py-2 bg-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 border border-gray-300"
                     title="Copy share link"
                   >
                     {copiedId === app.id ? (
