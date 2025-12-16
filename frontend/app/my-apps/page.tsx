@@ -146,7 +146,7 @@ export default function AppsPage() {
             </a>
             <div className="border-l border-gray-300 pl-4">
               <h1 className="text-lg font-semibold text-gray-900">App Distribution</h1>
-              <p className="text-xs text-gray-500">Internal app sharing tool</p>
+              {/* <p className="text-xs text-gray-500">Internal app sharing tool</p> */}
             </div>
           </div>
           <div className="flex items-center gap-6">

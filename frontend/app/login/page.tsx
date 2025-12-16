@@ -20,7 +20,7 @@ function LoginContent() {
             className="h-12 w-auto mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-gray-900">App Distribution</h1>
-          <p className="text-gray-500 mt-2">Internal app sharing tool</p>
+          {/* <p className="text-gray-500 mt-2">Internal app sharing tool</p> */}
         </div>
 
         {/* Login Card */}
