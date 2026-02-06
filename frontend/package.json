@@ -14,6 +14,7 @@
     "@types/plist": "^3.0.5",
     "@types/uuid": "^10.0.0",
     "adbkit-apkreader": "^3.2.0",
+    "app-info-parser": "^1.1.6",
     "bplist-parser": "^0.3.2",
     "jszip": "^3.10.1",
     "multer": "^2.0.2",

@@ -11,6 +11,7 @@ interface ExistingApp {
   packageName?: string;
   uploadedAt: string;
   fileSize: number;
+  icon?: string;
 }
 
 export default function Home() {
@@ -83,6 +84,10 @@ export default function Home() {
             setExistingAppMatch(existingApp);
             // Use existing app name to be consistent
             setAppName(existingApp.appName);
+            // Preserve existing app icon
+            if (existingApp.icon) {
+              setAppIcon(existingApp.icon);
+            }
           } else {
             setExistingAppMatch(null);
           }
@@ -98,7 +103,7 @@ export default function Home() {
           setVersion(data.versionName);
         }
 
-        // Set icon if available
+        // Set icon if available (prefer newly parsed icon over existing)
         if (data.icon) {
           setAppIcon(data.icon);
         }
@@ -417,8 +422,9 @@ export default function Home() {
                           <input
                             type="text"
                             value={appName}
-                            readOnly
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                            onChange={(e) => setAppName(e.target.value)}
+                            placeholder="Enter app name"
+                            className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-[#fc1c44]/30 focus:border-[#fc1c44] outline-none transition-all"
                           />
                         </div>
 

@@ -8,6 +8,7 @@ import path from 'path';
 import os from 'os';
 import plist from 'plist';
 import bplistParser from 'bplist-parser';
+import AppInfoParser from 'app-info-parser';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -416,11 +417,21 @@ export async function POST(request: NextRequest) {
     // Try to get app label from manifest application
     let appName = manifest.application?.label || '';
     
-    // If appName is a resource reference (starts with @ or resourceId:), use package name's last part
+    // If appName is a resource reference (starts with @ or resourceId:), use app-info-parser to resolve it
     if (!appName || appName.startsWith('@') || appName.startsWith('resourceId:')) {
-      // Use last part of package name, capitalize first letter
-      const lastPart = packageName?.split('.').pop() || '';
-      appName = lastPart.charAt(0).toUpperCase() + lastPart.slice(1) || file.name.replace('.apk', '');
+      try {
+        const appInfoParser = new AppInfoParser(tempFilePath);
+        const appInfo = await appInfoParser.parse();
+        appName = appInfo.application?.label?.[0] || '';
+        console.log('Resolved app name via app-info-parser:', appName);
+      } catch (e) {
+        console.error('app-info-parser failed:', e);
+      }
+      // Fallback: use last part of package name, capitalize first letter
+      if (!appName) {
+        const lastPart = packageName?.split('.').pop() || '';
+        appName = lastPart.charAt(0).toUpperCase() + lastPart.slice(1) || file.name.replace('.apk', '');
+      }
     }
 
     // Get icon path from manifest

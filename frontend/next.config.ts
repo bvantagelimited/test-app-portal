@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     },
     middlewareClientMaxBodySize: '100mb', // Allow large file uploads through middleware
   },
-  serverExternalPackages: ['adbkit-apkreader'],
+  serverExternalPackages: ['adbkit-apkreader', 'app-info-parser'],
 };
 
 export default nextConfig;
