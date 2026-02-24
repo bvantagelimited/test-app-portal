@@ -9,6 +9,11 @@
         <!-- fix: bug fix for the project. -->
         <!-- update: updated some part of the project. -->
         <!-- remove: removed some functionality from the project. -->
+        <release version="1.0.5" date="2026-02-24" description="redepploy">
+            <action dev="tinh" type="update" date="2026-02-06">
+                Improve the sharing url
+            </action>
+        </release>
         <release version="1.0.4" date="2026-02-06" description="redepploy">
             <action dev="tinh" type="update" date="2026-02-06">
                 Improve the App Name and Logo parsing
