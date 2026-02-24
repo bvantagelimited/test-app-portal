@@ -45,6 +45,11 @@ export default function SharePage() {
           throw new Error('File not found');
         }
         const data = await response.json();
+        // Handle redirect for old UUID-based links
+        if (data.redirect) {
+          router.replace(data.redirect);
+          return;
+        }
         setMetadata(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load file');
@@ -56,7 +61,7 @@ export default function SharePage() {
     if (id) {
       fetchMetadata();
     }
-  }, [id]);
+  }, [id, router]);
 
   const handleDownload = () => {
     window.location.href = `/api/download/${id}`;

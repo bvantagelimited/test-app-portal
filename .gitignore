@@ -7,3 +7,4 @@
 
 # TypeScript build info
 *.tsbuildinfo
+/node_modules

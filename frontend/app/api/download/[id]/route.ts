@@ -1,7 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, readdir, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+
+// Resolve an old UUID-based ID to the current folder name by scanning metadata
+async function resolveId(id: string): Promise<string | null> {
+  const uploadsBase = path.join(process.cwd(), 'uploads');
+  const directPath = path.join(uploadsBase, id);
+
+  // Direct match
+  if (existsSync(directPath)) {
+    return id;
+  }
+
+  // No direct match — scan all folders for metadata with matching old id
+  if (!existsSync(uploadsBase)) return null;
+  try {
+    const folders = await readdir(uploadsBase, { withFileTypes: true });
+    for (const folder of folders) {
+      if (!folder.isDirectory()) continue;
+      const metadataPath = path.join(uploadsBase, folder.name, 'metadata.json');
+      if (!existsSync(metadataPath)) continue;
+      try {
+        const content = await readFile(metadataPath, 'utf-8');
+        const metadata = JSON.parse(content);
+        if (metadata.previousIds && Array.isArray(metadata.previousIds) && metadata.previousIds.includes(id)) {
+          return folder.name;
+        }
+      } catch {
+        // skip
+      }
+    }
+  } catch {
+    // skip
+  }
+
+  return null;
+}
 
 interface DownloadRecord {
   timestamp: string;
@@ -88,12 +123,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const uploadsDir = path.join(process.cwd(), 'uploads', id);
+    const resolvedId = await resolveId(id);
 
-    if (!existsSync(uploadsDir)) {
+    if (!resolvedId) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
+    const uploadsDir = path.join(process.cwd(), 'uploads', resolvedId);
     const metadataPath = path.join(uploadsDir, 'metadata.json');
     if (!existsSync(metadataPath)) {
       return NextResponse.json({ error: 'Metadata not found' }, { status: 404 });
