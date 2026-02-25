@@ -196,11 +196,6 @@ export default function BrowsePage() {
                           {app.fileType}
                         </span>
                       )}
-                      {session?.user && app.uploadedBy && (
-                        <span className="text-xs text-gray-400">
-                          by {app.uploadedBy.name || app.uploadedBy.email.split('@')[0]}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
