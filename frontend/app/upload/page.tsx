@@ -512,20 +512,18 @@ export default function Home() {
                     : 'Your app is ready to share. Send the link below to your team or clients.'}
                 </p>
 
-                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700 p-2 mb-8 flex items-center shadow-inner">
-                  <div className="flex-1 px-4 py-2 overflow-x-auto text-left">
-                     <code className="text-sm font-mono text-[#fc1c44] dark:text-[#fc1c44] whitespace-nowrap">
-                      {typeof window !== 'undefined' && window.location.origin}
-                      {uploadResult.shareUrl}
-                    </code>
-                  </div>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-8 shadow-inner">
+                  <code className="text-sm font-mono text-[#fc1c44] dark:text-[#fc1c44] break-all block text-left mb-3">
+                    {typeof window !== 'undefined' && window.location.origin}
+                    {uploadResult.shareUrl}
+                  </code>
                   <button
                     onClick={() =>
                       copyToClipboard(
                         `${window.location.origin}${uploadResult.shareUrl}`
                       )
                     }
-                    className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg font-medium shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg font-medium shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
                   >
                     Copy Link
                   </button>

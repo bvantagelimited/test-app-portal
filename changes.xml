@@ -9,6 +9,11 @@
         <!-- fix: bug fix for the project. -->
         <!-- update: updated some part of the project. -->
         <!-- remove: removed some functionality from the project. -->
+        <release version="1.0.7" date="2026-03-02" description="redepploy">
+            <action dev="tinh" type="update" date="2026-03-02">
+                Fix UI bug
+            </action>
+        </release>
         <release version="1.0.6" date="2026-02-25" description="redepploy">
             <action dev="tinh" type="update" date="2026-02-25">
                 Remove Author Information
