@@ -10,7 +10,7 @@
         <!-- update: updated some part of the project. -->
         <!-- remove: removed some functionality from the project. -->
         <release version="1.0.7" date="2026-03-02" description="redepploy">
-            <action dev="tinh" type="update" date="2026-03-02">
+            <action dev="tinh" type="fix" date="2026-03-02">
                 Fix UI bug
             </action>
         </release>
